@@ -4,6 +4,7 @@ import { Login } from './components/login';
 import { CustomerDashboard } from './components/customer-dashboard';
 import { StaffDashboard } from './components/staff-dashboard';
 import { AdminDashboard } from './components/admin-dashboard';
+import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
   const { user } = useAuth();
@@ -26,8 +27,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider children={undefined}>
+    <>
+    <Toaster position="top-right" reverseOrder={false} />
+
+    <AuthProvider >
       <AppContent />
     </AuthProvider>
+        </>
   );
 }

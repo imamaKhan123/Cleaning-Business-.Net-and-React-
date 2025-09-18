@@ -12,10 +12,10 @@ public class UserService : IUserService
         return await _db.Users.FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
     }
 
-    public async Task<AppUser> CreateAsync(string email, string password, string role = "User")
+    public async Task<AppUser> CreateAsync(string email, string password,string name, string role = "User")
     {
         var hash = BCrypt.Net.BCrypt.HashPassword(password);
-        var user = new AppUser { Email = email.ToLowerInvariant(), PasswordHash = hash, Role = role };
+        var user = new AppUser { Email = email.ToLowerInvariant(), PasswordHash = hash, Role = role,Name= name, };
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
         return user;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -14,29 +15,360 @@ namespace server.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("AppUser", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("char(36)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("AddOns")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Cleaner")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Frequency")
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("Service")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("SpecialInstructions")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("Job", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("AssignedName")
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Service")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedTo");
+
+                    b.HasIndex("BookingId");
+
+                    b.ToTable("Jobs");
+                });
+
+            modelBuilder.Entity("Staff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("JobsCompleted")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("double");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Specialties")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Staff");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Email = "jane1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Jane Doe",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1001",
+                            Rating = 4.5,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "active"
+                        },
+                        new
+                        {
+                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Email = "john1@example.com",
+                            JobsCompleted = 0,
+                            Name = "John Smith",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1002",
+                            Rating = 4.2000000000000002,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "busy"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Email = "alice1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Alice Johnson",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1003",
+                            Rating = 4.7000000000000002,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "active"
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
+                            Email = "bob1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Bob Brown",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1004",
+                            Rating = 4.0999999999999996,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "offline"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Email = "sara1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Sara White",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1005",
+                            Rating = 4.7999999999999998,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "active"
+                        },
+                        new
+                        {
+                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
+                            Email = "mike1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Mike Wilson",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1006",
+                            Rating = 4.2999999999999998,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "busy"
+                        },
+                        new
+                        {
+                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
+                            Email = "emma1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Emma Davis",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1007",
+                            Rating = 4.5999999999999996,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "active"
+                        },
+                        new
+                        {
+                            Id = new Guid("88888888-8888-8888-8888-888888888888"),
+                            Email = "chris1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Chris Green",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1008",
+                            Rating = 4.0,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "offline"
+                        },
+                        new
+                        {
+                            Id = new Guid("99999999-9999-9999-9999-999999999999"),
+                            Email = "olivia1@example.com",
+                            JobsCompleted = 0,
+                            Name = "Olivia Lee",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1009",
+                            Rating = 4.9000000000000004,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "active"
+                        },
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            Email = "david1@example.com",
+                            JobsCompleted = 0,
+                            Name = "David King",
+                            PasswordHash = "$2a$11$EIX4n0kIEuFhXDJ1yJsy..PCMLz7pQ6XZ8UoRQvM5CnxyyCP6Yl82",
+                            Phone = "555-1010",
+                            Rating = 4.2000000000000002,
+                            Role = "staff",
+                            Specialties = "",
+                            Status = "busy"
+                        });
+                });
+
+            modelBuilder.Entity("Booking", b =>
+                {
+                    b.HasOne("AppUser", "User")
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Job", b =>
+                {
+                    b.HasOne("Staff", "AssignedStaff")
+                        .WithMany("Jobs")
+                        .HasForeignKey("AssignedTo")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedStaff");
+
+                    b.Navigation("Booking");
+                });
+
+            modelBuilder.Entity("AppUser", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("Staff", b =>
+                {
+                    b.Navigation("Jobs");
                 });
 #pragma warning restore 612, 618
         }

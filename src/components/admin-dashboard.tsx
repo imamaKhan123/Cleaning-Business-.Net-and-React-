@@ -21,7 +21,8 @@ import {
   Edit,
   Eye
 } from 'lucide-react';
-
+import { useJobs } from '../hooks/useJobs';
+import { useStaff } from '../hooks/useStaff';
 interface Staff {
   id: string;
   name: string;
@@ -120,11 +121,13 @@ const mockJobs: Job[] = [
 
 export function AdminDashboard() {
   const { user, logout } = useAuth();
-  const [staff, setStaff] = useState(mockStaff);
-  const [jobs, setJobs] = useState(mockJobs);
+
+  // const [jobs, setJobs] = useState(mockJobs);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-
+  const { jobs, loading, error, addJob, updateJob, removeJob, fetchJobs } = useJobs();
+  const { addStaff,staff } = useStaff();
+//  const [staff, setStaff] = useState([]);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -147,13 +150,26 @@ export function AdminDashboard() {
     }
   };
 
-  const assignJob = (jobId: string, staffName: string) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, assignedTo: staffName } : job
-    ));
-    setShowAssignModal(false);
-    setSelectedJob(null);
+  const assignJob = async (job: Job, staff: Staff) => {
+    try {
+      await updateJob(job.id, {
+        status: 'scheduled',        // or whatever status you want
+        assignedTo: staff.id,       // staff GUID
+        assignedName: staff.name    // staff display name
+      });
+  
+      // Update local state
+      // setJobs(jobs.map(j => 
+      //   j.id === job.id ? { ...j, assignedTo: staff.name, status: 'scheduled' } : j
+      // ));
+  
+      setShowAssignModal(false);
+      setSelectedJob(null);
+    } catch (err) {
+      console.error("Failed to assign job:", err);
+    }
   };
+  
 
   const totalRevenue = jobs.filter(j => j.status === 'completed').reduce((sum, job) => sum + job.price, 0);
   const activeJobs = jobs.filter(j => j.status === 'in-progress').length;
@@ -355,7 +371,7 @@ export function AdminDashboard() {
                         </div>
                         <div className="flex items-center">
                           <Users className="h-4 w-4 mr-2" />
-                          {job.assignedTo}
+                          {job.assignedTo? job.assignedName : "Not Assigned yet"}
                         </div>
                       </div>
 
@@ -368,7 +384,7 @@ export function AdminDashboard() {
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
                         </Button>
-                        {job.assignedTo === 'Unassigned' && (
+                        {job.assignedTo === 'Unassigned' ||job.assignedTo === null  && (
                           <Button 
                             size="sm"
                             onClick={() => {
@@ -435,11 +451,11 @@ export function AdminDashboard() {
                     <div>
                       <p className="text-sm font-medium mb-1">Specialties:</p>
                       <div className="flex flex-wrap gap-1">
-                        {member.specialties.map((specialty) => (
+                        {/* {member?.specialties.map((specialty) => (
                           <Badge key={specialty} variant="secondary" className="text-xs">
                             {specialty}
                           </Badge>
-                        ))}
+                        ))} */}
                       </div>
                     </div>
 
@@ -633,7 +649,8 @@ export function AdminDashboard() {
                         key={member.id}
                         variant="outline"
                         className="w-full justify-between"
-                        onClick={() => assignJob(selectedJob.id, member.name)}
+                        onClick={() => assignJob(selectedJob, member
+                        )}
                       >
                         <span>{member.name}</span>
                         <div className="flex items-center gap-1">

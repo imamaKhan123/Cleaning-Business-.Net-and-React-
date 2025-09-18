@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from './ui/checkbox';
 import { Badge } from './ui/badge';
 import { ArrowLeft, Home, Sparkles, Package, Truck } from 'lucide-react';
-
+import { bookingService,BookingDto } from '../services/bookingService';
 interface ServiceOption {
   id: string;
   name: string;
@@ -115,22 +115,28 @@ export function ServiceBooking({ onBack, onComplete }: ServiceBookingProps) {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedService) return;
     
-    const booking = {
-      service: selectedService.name,
-      date: formData.date,
-      time: formData.time,
-      address: formData.address,
-      price: calculateTotal(),
-      addOns: selectedAddOns,
-      specialInstructions: formData.specialInstructions,
-      frequency: formData.frequency
-    };
+  // Create a BookingDto from your form values
+const bookingDto: BookingDto = {
+  service: selectedService.name,
+  date: formData.date,                 // must be a string like "2025-09-16"
+  time: formData.time,                 // must be a string like "10:30"
+  address: formData.address,
+  price: calculateTotal(),             // number
+ //addOns: selectedAddOns || [],        // ensure it’s always an array
+  status: "scheduled",
+  specialInstructions: formData.specialInstructions || "",
+  frequency: formData.frequency || ""
+};
+console.log(bookingDto)
+    const result = await bookingService.create(bookingDto);
+    //  saveAuth(result);
+      console.log(result)
     
-    onComplete(booking);
+    onComplete(bookingDto);
   };
 
   return (

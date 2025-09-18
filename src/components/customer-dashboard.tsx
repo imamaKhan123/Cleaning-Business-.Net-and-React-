@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { useAuth } from './auth-context';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Calendar, Clock, MapPin, CreditCard, Star, Plus, CheckCircle } from 'lucide-react';
 import { ServiceBooking } from './service-booking';
 import { PaymentInterface } from './payment-interface';
+import { bookingService } from '../services/bookingService';
 
 interface Appointment {
   id: string;
@@ -54,11 +55,23 @@ const mockAppointments: Appointment[] = [
 
 export function CustomerDashboard() {
   const { user, logout } = useAuth();
-  const [appointments, setAppointments] = useState(mockAppointments);
+  const [appointments, setAppointments] = useState([]);
   const [showBooking, setShowBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const data = await bookingService.getAll();
+        setAppointments(data);
+        console.log(data);
+      } catch (err) {
+        console.error("Failed to fetch bookings", err);
+      }
+    };
+  
+    fetchBookings();
+  }, []);
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800';
@@ -84,7 +97,7 @@ export function CustomerDashboard() {
     setShowBooking(false);
   };
 
-  const upcomingAppointments = appointments.filter(apt => apt.status === 'scheduled' || apt.status === 'in-progress');
+  const upcomingAppointments = appointments.filter(apt => apt.status === "scheduled" || apt.status === 'in-progress');
   const pastAppointments = appointments.filter(apt => apt.status === 'completed' || apt.status === 'cancelled');
 
   if (showBooking) {
@@ -216,7 +229,7 @@ export function CustomerDashboard() {
                               <MapPin className="h-4 w-4 ml-3 mr-1" />
                               {appointment.address}
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">Cleaner: {appointment.cleaner}</p>
+                            <p className="text-sm text-gray-600 mt-1">Cleaner: {appointment.cleaner?appointment.cleaner:"To be Assigned" }</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -254,7 +267,7 @@ export function CustomerDashboard() {
                             <MapPin className="h-4 w-4 ml-3 mr-1" />
                             {appointment.address}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">Cleaner: {appointment.cleaner}</p>
+                          <p className="text-sm text-gray-600 mt-1">Cleaner: {appointment.cleaner?appointment.cleaner:"To be Assigned" }</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -337,3 +350,7 @@ export function CustomerDashboard() {
     </div>
   );
 }
+
+// function useEffect(arg0: () => void, arg1: never[]) {
+//   throw new Error('Function not implemented.');
+// }
