@@ -7,7 +7,7 @@ export interface Job {
     time: string;
     address: string;
     assignedTo: string;
-    assignedName: string;
+    // assignedName: string;
     status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
     price: number;
     priority: 'low' | 'medium' | 'high';

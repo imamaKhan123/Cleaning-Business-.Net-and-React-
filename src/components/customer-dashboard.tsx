@@ -4,10 +4,11 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Calendar, Clock, MapPin, CreditCard, Star, Plus, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, CreditCard, Star, Plus, CheckCircle, Edit } from 'lucide-react';
 import { ServiceBooking } from './service-booking';
 import { PaymentInterface } from './payment-interface';
 import { bookingService } from '../services/bookingService';
+import { EditAppointmentModal } from './edit-appointment-modal';
 
 interface Appointment {
   id: string;
@@ -58,6 +59,8 @@ export function CustomerDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [showBooking, setShowBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   useEffect(() => {
     const fetchBookings = async () => {
@@ -72,6 +75,22 @@ export function CustomerDashboard() {
   
     fetchBookings();
   }, []);
+  const handleUpdateAppointment = (id: string, updatedData: Partial<Appointment>) => {
+    setAppointments(appointments.map(apt => 
+      apt.id === id ? { ...apt, ...updatedData } : apt
+    ));
+  };
+
+  const handleCancelAppointment = (id: string) => {
+    setAppointments(appointments.map(apt => 
+      apt.id === id ? { ...apt, status: 'cancelled' as const } : apt
+    ));
+  };
+
+  const openEditModal = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setShowEditModal(true);
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'scheduled': return 'bg-blue-100 text-blue-800';
@@ -237,6 +256,16 @@ export function CustomerDashboard() {
                             {appointment.status}
                           </Badge>
                           <p className="font-medium">${appointment.price}</p>
+                          {appointment.status === 'scheduled' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditModal(appointment)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -346,6 +375,18 @@ export function CustomerDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Appointment Modal */}
+        <EditAppointmentModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedAppointment(null);
+          }}
+          appointment={selectedAppointment}
+          onUpdateAppointment={handleUpdateAppointment}
+          onCancelAppointment={handleCancelAppointment}
+        />
       </div>
     </div>
   );

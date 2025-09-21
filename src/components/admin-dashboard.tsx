@@ -3,6 +3,7 @@ import { useAuth } from './auth-context';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
+import { CreateJobModal } from './create-job-modal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -23,6 +24,8 @@ import {
 } from 'lucide-react';
 import { useJobs } from '../hooks/useJobs';
 import { useStaff } from '../hooks/useStaff';
+import { useBookings } from '../hooks/useBookings';
+
 interface Staff {
   id: string;
   name: string;
@@ -47,77 +50,77 @@ interface Job {
   priority: 'low' | 'medium' | 'high';
 }
 
-const mockStaff: Staff[] = [
-  {
-    id: '1',
-    name: 'Jane Cleaner',
-    email: 'jane@cleanerpro.com',
-    phone: '(555) 234-5678',
-    status: 'active',
-    rating: 4.8,
-    jobsCompleted: 156,
-    specialties: ['Deep Cleaning', 'Commercial']
-  },
-  {
-    id: '2',
-    name: 'Mike Wilson',
-    email: 'mike@cleanerpro.com',
-    phone: '(555) 345-6789',
-    status: 'busy',
-    rating: 4.6,
-    jobsCompleted: 143,
-    specialties: ['Regular Cleaning', 'Move-out']
-  },
-  {
-    id: '3',
-    name: 'Sarah Johnson',
-    email: 'sarah@cleanerpro.com',
-    phone: '(555) 456-7890',
-    status: 'offline',
-    rating: 4.9,
-    jobsCompleted: 189,
-    specialties: ['Deep Cleaning', 'Post-Construction']
-  }
-];
+// const mockStaff: Staff[] = [
+//   {
+//     id: '1',
+//     name: 'Jane Cleaner',
+//     email: 'jane@cleanerpro.com',
+//     phone: '(555) 234-5678',
+//     status: 'active',
+//     rating: 4.8,
+//     jobsCompleted: 156,
+//     specialties: ['Deep Cleaning', 'Commercial']
+//   },
+//   {
+//     id: '2',
+//     name: 'Mike Wilson',
+//     email: 'mike@cleanerpro.com',
+//     phone: '(555) 345-6789',
+//     status: 'busy',
+//     rating: 4.6,
+//     jobsCompleted: 143,
+//     specialties: ['Regular Cleaning', 'Move-out']
+//   },
+//   {
+//     id: '3',
+//     name: 'Sarah Johnson',
+//     email: 'sarah@cleanerpro.com',
+//     phone: '(555) 456-7890',
+//     status: 'offline',
+//     rating: 4.9,
+//     jobsCompleted: 189,
+//     specialties: ['Deep Cleaning', 'Post-Construction']
+//   }
+// ];
 
-const mockJobs: Job[] = [
-  {
-    id: '1',
-    customerName: 'John Doe',
-    service: 'Deep Cleaning',
-    date: '2024-03-15',
-    time: '09:00',
-    address: '123 Main St, Apt 4B',
-    assignedTo: 'Jane Cleaner',
-    status: 'in-progress',
-    price: 150,
-    priority: 'high'
-  },
-  {
-    id: '2',
-    customerName: 'Alice Smith',
-    service: 'Regular Cleaning',
-    date: '2024-03-15',
-    time: '14:00',
-    address: '456 Oak Ave',
-    assignedTo: 'Mike Wilson',
-    status: 'scheduled',
-    price: 80,
-    priority: 'medium'
-  },
-  {
-    id: '3',
-    customerName: 'Bob Brown',
-    service: 'Move-out Cleaning',
-    date: '2024-03-16',
-    time: '10:00',
-    address: '789 Pine St',
-    assignedTo: 'Unassigned',
-    status: 'scheduled',
-    price: 200,
-    priority: 'high'
-  }
-];
+// const mockJobs: Job[] = [
+//   {
+//     id: '1',
+//     customerName: 'John Doe',
+//     service: 'Deep Cleaning',
+//     date: '2024-03-15',
+//     time: '09:00',
+//     address: '123 Main St, Apt 4B',
+//     assignedTo: 'Jane Cleaner',
+//     status: 'in-progress',
+//     price: 150,
+//     priority: 'high'
+//   },
+//   {
+//     id: '2',
+//     customerName: 'Alice Smith',
+//     service: 'Regular Cleaning',
+//     date: '2024-03-15',
+//     time: '14:00',
+//     address: '456 Oak Ave',
+//     assignedTo: 'Mike Wilson',
+//     status: 'scheduled',
+//     price: 80,
+//     priority: 'medium'
+//   },
+//   {
+//     id: '3',
+//     customerName: 'Bob Brown',
+//     service: 'Move-out Cleaning',
+//     date: '2024-03-16',
+//     time: '10:00',
+//     address: '789 Pine St',
+//     assignedTo: 'Unassigned',
+//     status: 'scheduled',
+//     price: 200,
+//     priority: 'high'
+//   }
+// ];
 
 export function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -125,9 +128,16 @@ export function AdminDashboard() {
   // const [jobs, setJobs] = useState(mockJobs);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const { jobs, loading, error, addJob, updateJob, removeJob, fetchJobs } = useJobs();
+  const [showCreateJobModal, setShowCreateJobModal] = useState(false);
+  const { jobs, addJob, updateJob, removeJob, fetchJobs } = useJobs();
   const { addStaff,staff } = useStaff();
-//  const [staff, setStaff] = useState([]);
+  const {
+    bookings,
+    addBooking,
+    updateBooking,
+    removeBooking,
+    fetchBookings
+  } = useBookings();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
@@ -157,19 +167,30 @@ export function AdminDashboard() {
         assignedTo: staff.id,       // staff GUID
         assignedName: staff.name    // staff display name
       });
-  
-      // Update local state
-      // setJobs(jobs.map(j => 
-      //   j.id === job.id ? { ...j, assignedTo: staff.name, status: 'scheduled' } : j
-      // ));
-  
+
       setShowAssignModal(false);
       setSelectedJob(null);
     } catch (err) {
       console.error("Failed to assign job:", err);
     }
   };
-  
+  const handleCreateJob = (newJobData: Omit<Job, 'id'>) => {
+    const newJob: Job = {
+      ...newJobData,
+      id: Date.now().toString()
+    };
+   
+    try{
+      console.log(newJob)
+      const a=addBooking(newJob);}
+      catch(e){
+
+      }
+      finally{
+       
+      }
+   
+  };
 
   const totalRevenue = jobs.filter(j => j.status === 'completed').reduce((sum, job) => sum + job.price, 0);
   const activeJobs = jobs.filter(j => j.status === 'in-progress').length;
@@ -323,7 +344,10 @@ export function AdminDashboard() {
                 <h2 className="text-xl font-semibold">Job Management</h2>
                 <p className="text-gray-600">Monitor and assign cleaning jobs</p>
               </div>
-              <Button className="flex items-center gap-2">
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => setShowCreateJobModal(true)}
+              >
                 <Plus className="h-4 w-4" />
                 New Job
               </Button>
@@ -675,6 +699,13 @@ export function AdminDashboard() {
             </Card>
           </div>
         )}
+         {/* Create Job Modal */}
+         <CreateJobModal 
+          isOpen={showCreateJobModal}
+          onClose={() => setShowCreateJobModal(false)}
+          onCreateJob={handleCreateJob}
+          staff={staff}
+        />
       </div>
     </div>
   );
