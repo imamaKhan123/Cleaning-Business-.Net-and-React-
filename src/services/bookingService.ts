@@ -60,7 +60,13 @@ export const bookingService = {
     const res = await axios.put(`${API_URL}/${id}`, dto, { headers: getAuthHeader() });
     return res.data;
   },
-
+  cancel: async (id: string): Promise<Booking> => {
+    const res = await axios.put(
+      `${API_URL}/${id}/cancel`,
+      {}, // empty body
+      { headers: getAuthHeader() } // headers go here
+    ); return res.data;
+  },
   delete: async (id: string): Promise<void> => {
     await axios.delete(`${API_URL}/${id}`, { headers: getAuthHeader() });
   }

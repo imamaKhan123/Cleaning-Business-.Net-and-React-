@@ -66,7 +66,7 @@ public record BookingDto(
     string Time,
     string Address,
     decimal Price,
-    string? AddOns,
+    string[]? AddOns,
     string? SpecialInstructions,
     string? Frequency,
       string? Cleaner ,

@@ -126,7 +126,7 @@ const bookingDto: BookingDto = {
   time: formData.time,                 // must be a string like "10:30"
   address: formData.address,
   price: calculateTotal(),             // number
- //addOns: selectedAddOns || [],        // ensure it’s always an array
+  addOns: selectedAddOns || [],        // ensure it’s always an array
   status: "scheduled",
   specialInstructions: formData.specialInstructions || "",
   frequency: formData.frequency || ""

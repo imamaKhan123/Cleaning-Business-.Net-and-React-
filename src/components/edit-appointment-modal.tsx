@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { X, Save, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Appointment {
   id: string;
@@ -47,7 +48,8 @@ export function EditAppointmentModal({
     date: '',
     time: '',
     address: '',
-    price: 0
+    price: 0,
+  
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -62,7 +64,8 @@ export function EditAppointmentModal({
         date: normalizedDate,
         time: appointment.time,
         address: appointment.address,
-        price: appointment.price
+        price: appointment.price,
+        cleaner: "To be Assigned"
       });
     }
   }, [appointment]);
@@ -132,8 +135,22 @@ export function EditAppointmentModal({
 
   const handleCancel = () => {
     onCancelAppointment(appointment.id);
-    setShowCancelDialog(false);
-    onClose();
+    try {
+      if (!appointment) return;
+  
+  
+      // 2️⃣ Close the cancel dialog
+      setShowCancelDialog(false);
+  
+      // 3️⃣ Close the modal
+      onClose();
+  
+      
+    } catch (error) {
+      toast.error("Failed to cancel appointment:", error);
+      // Optionally: show an error notification
+    }
+   
   };
 
   // Get minimum date (today)
@@ -209,7 +226,7 @@ export function EditAppointmentModal({
                   <>
                     <Input
                       type="date"
-                      value={formData.date}
+                      value={formData.date?? ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                       min={minDate}
                     />
@@ -218,7 +235,7 @@ export function EditAppointmentModal({
                     )}
                   </>
                 ) : (
-                  <Input value={formData.date} disabled />
+                  <Input value={formData.date ?? ""} disabled />
                 )}
               </div>
               
@@ -228,7 +245,7 @@ export function EditAppointmentModal({
                   <>
                     <Input
                       type="time"
-                      value={formData.time}
+                      value={formData.time ?? ""}
                       onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
                     />
                     {errors.time && (
@@ -236,7 +253,7 @@ export function EditAppointmentModal({
                     )}
                   </>
                 ) : (
-                  <Input value={formData.time} disabled />
+                  <Input value={formData.time ?? ""} disabled />
                 )}
               </div>
             </div>
@@ -246,7 +263,7 @@ export function EditAppointmentModal({
               {canEdit ? (
                 <>
                   <Textarea
-                    value={formData.address}
+                    value={formData.address ?? ""}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     placeholder="Enter service address"
                     rows={2}
@@ -256,7 +273,7 @@ export function EditAppointmentModal({
                   )}
                 </>
               ) : (
-                <Textarea value={formData.address} disabled rows={2} />
+                <Textarea value={formData.address ?? ""} disabled rows={2} />
               )}
             </div>
 
@@ -264,7 +281,7 @@ export function EditAppointmentModal({
               <Label>Price</Label>
               <Input
                 type="number"
-                value={formData.price}
+                value={formData.price ?? 0}
                 disabled={true}
                 onChange={canEdit ? (e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) })) : undefined}
                 min="0"
@@ -274,7 +291,7 @@ export function EditAppointmentModal({
 
             <div className="space-y-2">
               <Label>Assigned Cleaner</Label>
-              <Input value={appointment.cleaner} disabled />
+              <Input value={appointment.cleaner ?? ""} disabled />
               <p className="text-sm text-gray-600">
                 Contact support to change assigned cleaner
               </p>

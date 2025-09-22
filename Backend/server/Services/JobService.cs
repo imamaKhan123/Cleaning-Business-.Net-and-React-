@@ -36,8 +36,56 @@ public class JobService
 
         return job;
     }
+public async Task<JobDto?> UpdateFromBookingAsync(Booking booking)
+{
+    var job = await _db.Jobs.FirstOrDefaultAsync(j => j.BookingId == booking.Id);
 
-    // 🔹 Get all jobs
+    if (job == null)
+    {
+        // If no job exists for this booking, create one
+        var newJob = await CreateFromBookingAsync(booking);
+        return new JobDto
+        {
+            Id = newJob.Id,
+            Service = newJob.Service,
+            Status = newJob.Status,
+            AssignedTo = newJob.AssignedTo,
+            AssignedName = newJob.AssignedName
+        };
+    }
+
+    // Sync job fields with updated booking
+    job.Service = booking.Service;
+    job.Date = booking.Date;
+    job.Time = booking.Time;
+    job.Address = booking.Address;
+    job.Price = booking.Price;
+    job.Status = booking.Status;
+    job.Priority = booking.Service?.ToLower().Contains("move-out") == true ? "high" : "medium";
+
+    // Sync staff assignment if cleaner is updated
+    if (!string.IsNullOrEmpty(booking.Cleaner))
+    {
+        var staff = await _db.Staff.FirstOrDefaultAsync(s => s.Name == booking.Cleaner);
+        if (staff != null)
+        {
+            job.AssignedTo = staff.Id;
+            job.AssignedName = staff.Name;
+        }
+    }
+
+    await _db.SaveChangesAsync();
+
+    return new JobDto
+    {
+        Id = job.Id,
+        Service = job.Service,
+        Status = job.Status,
+        AssignedTo = job.AssignedTo,
+        AssignedName = job.AssignedName
+    };
+}
+  // 🔹 Get all jobs
     public async Task<List<Job>> GetAllAsync()
     {
         return await _db.Jobs.Include(j => j.Booking).ToListAsync();

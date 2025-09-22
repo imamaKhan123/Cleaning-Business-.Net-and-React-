@@ -44,6 +44,18 @@ export function useBookings() {
     }
   };
 
+  //cancel bboking
+  const cancelBooking = async (id: string) => {
+    try {
+      const updated = await bookingService.cancel(id);
+      setBookings(prev => prev.map(b => (b.id === id ? updated : b)));
+      return updated;
+    } catch (err: any) {
+      setError(err.message || 'Failed to cancel booking');
+      throw err;
+    }
+  };
+
   // Delete a booking
   const removeBooking = async (id: string) => {
     try {
@@ -65,6 +77,7 @@ export function useBookings() {
     error,
     fetchBookings,
     addBooking,
+    cancelBooking,
     updateBooking,
     removeBooking,
   };

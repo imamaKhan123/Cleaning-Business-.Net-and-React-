@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 public class AppUser
 {
@@ -12,6 +13,7 @@ public class AppUser
     [Required]
     public string PasswordHash { get; set; } = null!; // for demo: use BCrypt
     public string Role { get; set; } = "User";
+     [JsonIgnore] 
      public List<Booking> Bookings { get; set; } = new List<Booking>();
 
 }

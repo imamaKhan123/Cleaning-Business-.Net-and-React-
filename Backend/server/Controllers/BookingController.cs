@@ -37,7 +37,7 @@ public class BookingController : ControllerBase
             Time = booking.Time,
             Address = booking.Address,
             Price = booking.Price,
-            //AddOns = booking.AddOns?.ToArray(),
+            AddOns = booking.AddOns,
             SpecialInstructions = booking.SpecialInstructions,
             Frequency = booking.Frequency,
             User = new UserDto
@@ -84,6 +84,20 @@ public class BookingController : ControllerBase
         if (updated == null) return NotFound();
         return Ok(updated);
     }
+
+[HttpPut("{id}/cancel")]
+public async Task<IActionResult> Cancel(Guid id)
+{
+    var userId = GetUserId();
+    if (userId == Guid.Empty) return Unauthorized();
+
+    var cancelled = await _bookingService.CancelBookingAsync(id, userId);
+    if (cancelled == null) return NotFound();
+
+    return Ok(cancelled);
+}
+
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)

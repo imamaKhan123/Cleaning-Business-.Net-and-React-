@@ -4,11 +4,14 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Calendar, Clock, MapPin, CreditCard, Star, Plus, CheckCircle, Edit } from 'lucide-react';
+import { Calendar, Clock, MapPin, CreditCard, Star, Plus, CheckCircle, Edit, ExternalLink } from 'lucide-react';
 import { ServiceBooking } from './service-booking';
 import { PaymentInterface } from './payment-interface';
 import { bookingService } from '../services/bookingService';
 import { EditAppointmentModal } from './edit-appointment-modal';
+import { useBookings } from '../hooks/useBookings';
+import toast from 'react-hot-toast';
+
 
 interface Appointment {
   id: string;
@@ -19,6 +22,7 @@ interface Appointment {
   status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
   address: string;
   price: number;
+  addOns?: string[]; 
 }
 
 const mockAppointments: Appointment[] = [
@@ -60,31 +64,38 @@ export function CustomerDashboard() {
   const [showBooking, setShowBooking] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const { bookings, updateBooking,cancelBooking } = useBookings();
 
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const data = await bookingService.getAll();
-        setAppointments(data);
-        console.log(data);
-      } catch (err) {
-        console.error("Failed to fetch bookings", err);
-      }
-    };
-  
-    fetchBookings();
-  }, []);
-  const handleUpdateAppointment = (id: string, updatedData: Partial<Appointment>) => {
+    setAppointments(bookings); // update whenever bookings change
+  }, [bookings]);
+  const handleUpdateAppointment = async (id: string, updatedData: Partial<Appointment>) => {
     setAppointments(appointments.map(apt => 
       apt.id === id ? { ...apt, ...updatedData } : apt
     ));
+    try {
+      const updated = await updateBooking(id, updatedData);
+      console.log("Booking updated:", updated);
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
   };
 
-  const handleCancelAppointment = (id: string) => {
+  const handleCancelAppointment = async(id: string) => {
     setAppointments(appointments.map(apt => 
       apt.id === id ? { ...apt, status: 'cancelled' as const } : apt
     ));
+    try {
+      const updated = await cancelBooking(id);
+      toast.success("Appointment cancelled successfully");
+      console.log("Booking updated:", updated);
+    } catch (err) {
+      toast.error("Appointment not cancelled.An error occured");
+      console.error("Update failed:", err);
+    }
+
+   
   };
 
   const openEditModal = (appointment: Appointment) => {
@@ -195,6 +206,7 @@ export function CustomerDashboard() {
                   </div>
                 </CardContent>
               </Card>
+              
               <Card className="border-purple-100 bg-gradient-to-br from-purple-50 to-purple-100/50">
                 <CardContent className="p-6">
                   <div className="flex items-center">
@@ -230,7 +242,7 @@ export function CustomerDashboard() {
                   <div className="text-center py-8">
                     <p className="text-gray-500">No upcoming appointments</p>
                     <Button onClick={() => setShowBooking(true)} className="mt-4">
-                      Book Your First Service
+                      Book Your Service
                     </Button>
                   </div>
                 ) : (
@@ -242,12 +254,30 @@ export function CustomerDashboard() {
                             <p className="font-medium">{appointment.service}</p>
                             <div className="flex items-center text-sm text-gray-600 mt-1">
                               <Calendar className="h-4 w-4 mr-1" />
-                              {appointment.date}
+                              {new Date(appointment.date).toLocaleDateString('en-CA')}
                               <Clock className="h-4 w-4 ml-3 mr-1" />
                               {appointment.time}
                               <MapPin className="h-4 w-4 ml-3 mr-1" />
                               {appointment.address}
+                              
                             </div>
+                   
+                            
+                              
+                              {appointment.addOns && appointment.addOns.length > 0 && (
+                                           <div className="flex items-center text-sm text-gray-600 mt-1">
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                    <div className="gap-2">
+                                      Add-ons: 
+                                      
+                                        {appointment.addOns.map((addOn) => (
+                                          <span className="capitalize" key={addOn}>{" "+addOn+" "}</span>
+                                        ))}
+                                   
+                                    </div>
+                                    </div>
+                                  )}
+                        
                             <p className="text-sm text-gray-600 mt-1">Cleaner: {appointment.cleaner?appointment.cleaner:"To be Assigned" }</p>
                           </div>
                         </div>
@@ -290,7 +320,8 @@ export function CustomerDashboard() {
                           <p className="font-medium">{appointment.service}</p>
                           <div className="flex items-center text-sm text-gray-600 mt-1">
                             <Calendar className="h-4 w-4 mr-1" />
-                            {appointment.date}
+                            {new Date(appointment.date).toLocaleDateString('en-CA')}
+
                             <Clock className="h-4 w-4 ml-3 mr-1" />
                             {appointment.time}
                             <MapPin className="h-4 w-4 ml-3 mr-1" />
@@ -316,6 +347,17 @@ export function CustomerDashboard() {
                             View Invoice
                           </Button>
                         )}
+                           {appointment.status === 'scheduled' && (
+                         <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={() => openEditModal(appointment)}
+                       >
+                         <Edit className="h-4 w-4 mr-1" />
+                         Edit
+                       </Button>
+                        )}
+                        
                       </div>
                     </div>
                   ))}
@@ -352,8 +394,8 @@ export function CustomerDashboard() {
                       <div key={appointment.id} className="flex items-center justify-between p-3 border rounded">
                         <div>
                           <p className="font-medium">{appointment.service}</p>
-                          <p className="text-sm text-gray-600">{appointment.date}</p>
-                        </div>
+                          {new Date(appointment.date).toLocaleDateString('en-CA')}
+                          </div>
                         <div className="flex items-center space-x-2">
                           <p className="font-medium">${appointment.price}</p>
                           <Button 
@@ -392,6 +434,3 @@ export function CustomerDashboard() {
   );
 }
 
-// function useEffect(arg0: () => void, arg1: never[]) {
-//   throw new Error('Function not implemented.');
-// }
